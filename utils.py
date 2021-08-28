@@ -2,6 +2,8 @@ import os
 import torch
 
 
+DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+
 def adjust_learning_rate(optimizer, lr):
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
@@ -24,8 +26,8 @@ def train_epoch(loader, model, criterion, optimizer):
     model.train()
 
     for i, (input, target) in enumerate(loader):
-        input = input.cuda(async=True)
-        target = target.cuda(async=True)
+        input = input.to(DEVICE, non_blocking=True)
+        target = target.to(DEVICE, non_blocking=True)
         input_var = torch.autograd.Variable(input)
         target_var = torch.autograd.Variable(target)
 
@@ -36,7 +38,7 @@ def train_epoch(loader, model, criterion, optimizer):
         loss.backward()
         optimizer.step()
 
-        loss_sum += loss.data[0] * input.size(0)
+        loss_sum += loss.item() * input.size(0)
         pred = output.data.max(1, keepdim=True)[1]
         correct += pred.eq(target_var.data.view_as(pred)).sum().item()
 
@@ -53,8 +55,8 @@ def eval(loader, model, criterion):
     model.eval()
 
     for i, (input, target) in enumerate(loader):
-        input = input.cuda(async=True)
-        target = target.cuda(async=True)
+        input = input.to(DEVICE, non_blocking=True)
+        target = target.to(DEVICE, non_blocking=True)
         input_var = torch.autograd.Variable(input)
         target_var = torch.autograd.Variable(target)
 
@@ -121,7 +123,7 @@ def bn_update(loader, model):
     model.apply(lambda module: _get_momenta(module, momenta))
     n = 0
     for input, _ in loader:
-        input = input.cuda(async=True)
+        input = input.to(DEVICE, non_blocking=True)
         input_var = torch.autograd.Variable(input)
         b = input_var.data.size(0)
 
