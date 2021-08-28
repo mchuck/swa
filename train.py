@@ -69,14 +69,14 @@ def run():
             batch_size=args.batch_size,
             shuffle=True,
             num_workers=args.num_workers,
-            pin_memory=True
+            #pin_memory=True
         ),
         'test': torch.utils.data.DataLoader(
             test_set,
             batch_size=args.batch_size,
             shuffle=False,
             num_workers=args.num_workers,
-            pin_memory=True
+            #pin_memory=True
         )
     }
     num_classes = max(train_set.targets) + 1
